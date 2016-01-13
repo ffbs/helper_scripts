@@ -4,32 +4,31 @@
 import urllib
 import json
 import sys
+import subprocess
 
 def fnd(fw):
     print "---"
     print "Nodes with firmware " + fw + ":"
-    for n in data['nodes']:
-        if data['nodes'][n]['nodeinfo']['software']['firmware']['release'] == fw:
-            if data['nodes'][n]['flags']['online'] == True:
-                print data['nodes'][n]['nodeinfo']['hostname']
+    for n in data:
+        if data[n]['software']['firmware']['release'] == fw:
+	    if 'owner' not in data[n]:
+                print data[n]['hostname'] + " <kein Kontakt>" 
+	    else:
+                print data[n]['hostname'] + " von " + data[n]['owner']['contact']
+		
 
+output = subprocess.check_output("alfred-json -r 158", shell=True)
 
-url = "https://freifunk-bs.de/nodes.json"
-
-r = urllib.urlopen(url)
-
-data = json.loads(r.read())
+data = json.loads(output)
 
 firmwares = set()
 
-for n in data['nodes']:
-    if data['nodes'][n]['flags']['online'] == True:
-        firmwares.add(data['nodes'][n]['nodeinfo']['software']['firmware']['release'])
+for n in data:
+    firmwares.add(data[n]['software']['firmware']['release'])
 
 print "Current Firmware Versions:"
 for f in firmwares:
     print f
-
 
 if len(sys.argv) >= 2:
     fw = sys.argv[1]
